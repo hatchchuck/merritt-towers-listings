@@ -16,8 +16,22 @@
   .verified-bar { background: #1e4976; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
   .verified-text { font-size: 12px; color: rgba(255,255,255,0.65); }
   .verified-text strong { color: rgba(255,255,255,0.9); }
-  .check-btn { display: inline-flex; align-items: center; gap: 6px; background: #f59e0b; color: #1a1a00; font-size: 13px; font-weight: 700; padding: 7px 16px; border-radius: 20px; text-decoration: none; white-space: nowrap; }
+  .check-btn { display: inline-flex; align-items: center; gap: 6px; background: #f59e0b; color: #1a1a00; font-size: 13px; font-weight: 700; padding: 7px 16px; border-radius: 20px; border: none; cursor: pointer; white-space: nowrap; font-family: inherit; }
   .check-btn:hover { background: #d97706; }
+  .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; overflow-y: auto; padding: 16px; }
+  .overlay.open { display: block; }
+  .popup { background: #f0f4f8; margin: 0 auto; max-width: 700px; border-radius: 16px; overflow: hidden; }
+  .popup-header { background: linear-gradient(135deg, #1a3a5c 0%, #2d6a9f 100%); padding: 16px 20px; display: flex; justify-content: space-between; align-items: flex-start; }
+  .popup-title { color: white; font-size: 16px; font-weight: 700; }
+  .popup-sub { color: rgba(255,255,255,0.65); font-size: 12px; margin-top: 3px; }
+  .popup-close { background: rgba(255,255,255,0.15); border: none; color: white; font-size: 18px; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; flex-shrink: 0; font-family: inherit; margin-left: 12px; }
+  .popup-close:hover { background: rgba(255,255,255,0.3); }
+  .popup-body { padding: 14px; }
+  .popup-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 12px; }
+  .popup-fetching { text-align: center; padding: 2rem; color: #64748b; }
+  .popup-spinner { width: 28px; height: 28px; margin: 0 auto 10px; border: 3px solid #e2e8f0; border-top-color: #2d6a9f; border-radius: 50%; animation: spin .75s linear infinite; }
+  .popup-note { font-size: 12px; color: #94a3b8; text-align: center; padding: 8px 14px 14px; }
+  .popup-note a { color: #2d6a9f; }
   .stats-strip { display: flex; background: #163354; border-bottom: 1px solid rgba(255,255,255,0.08); overflow-x: auto; }
   .stat { flex: 1; min-width: 75px; padding: 10px 8px; text-align: center; border-right: 1px solid rgba(255,255,255,0.08); }
   .stat:last-child { border-right: none; }
@@ -73,9 +87,7 @@
 
 <div class="verified-bar">
   <div class="verified-text">🕐 Last updated: <strong id="last-updated">Loading…</strong></div>
-  <a class="check-btn" href="https://www.merrittislandcocoabeachhomes.com/merritt-towers-condo/" target="_blank">
-    ↗ Check for new listings
-  </a>
+  <button class="check-btn" onclick="openPopup()">↗ Check for new listings</button>
 </div>
 
 <div class="stats-strip">
@@ -145,8 +157,135 @@
   Data source: <a href="https://www.merrittislandcocoabeachhomes.com/merritt-towers-condo/" target="_blank">merrittislandcocoabeachhomes.com</a> (Space Coast MLS) · Updated daily
 </footer>
 
-<script>
-var activeBldg = 'all';
+<div class="overlay" id="overlay" onclick="closePopupOnBg(event)">
+  <div class="popup" id="popup">
+    <div class="popup-header">
+      <div>
+        <div class="popup-title">🏢 Live Merritt Towers Listings</div>
+        <div class="popup-sub">Fetched fresh from Space Coast MLS right now</div>
+      </div>
+      <button class="popup-close" onclick="closePopup()">✕</button>
+    </div>
+    <div class="popup-body">
+      <div class="popup-grid" id="popup-grid">
+        <div class="popup-fetching">
+          <div class="popup-spinner"></div>
+          <div style="font-size:13px;">Fetching latest listings…</div>
+        </div>
+      </div>
+      <div class="popup-note">
+        Data pulled live from <a href="https://www.merrittislandcocoabeachhomes.com/merritt-towers-condo/" target="_blank">merrittislandcocoabeachhomes.com</a> (Space Coast MLS)
+      </div>
+    </div>
+  </div>
+</div>
+
+
+var PROXY = 'https://api.allorigins.win/get?url=';
+var MLS_URL = 'https://www.merrittislandcocoabeachhomes.com/merritt-towers-condo/';
+
+function openPopup() {
+  document.getElementById('overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  fetchLiveListings();
+}
+
+function closePopup() {
+  document.getElementById('overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function closePopupOnBg(e) {
+  if (e.target === document.getElementById('overlay')) closePopup();
+}
+
+function parseListingsFromHTML(html) {
+  var results = [];
+  try {
+    var section = html.indexOf('Currently Listed Merritt Towers') > -1
+      ? html.split('Currently Listed Merritt Towers')[1] : html;
+    var re = /href="(https:\/\/www\.merrittislandcocoabeachhomes\.com\/property\/(\d+)\/)"[^>]*>([\s\S]*?)<\/a>/gi;
+    var m;
+    while ((m = re.exec(section)) !== null) {
+      var url  = m[1];
+      var mls  = m[2];
+      var body = m[3].replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+      var priceM = body.match(/\$([0-9,]+)/);
+      if (!priceM) continue;
+      var price = parseInt(priceM[1].replace(/,/g,''));
+      if (price < 50000 || price > 5000000) continue;
+      var bedsM  = body.match(/(\d+)\s*Beds?/i);
+      var bathsM = body.match(/(\d+)\s*Baths?/i);
+      var sqftM  = body.match(/([0-9,]+)\s*sq\.?\s*ft/i);
+      var addrM  = body.match(/(\d+)\s*S\s*Sykes\s*Creek/i);
+      var unitM  = body.match(/Unit\s+([A-Z]?\d+[A-Z]?)/i);
+      var mlsIdx = body.indexOf(mls);
+      var desc   = mlsIdx > -1 ? body.slice(mlsIdx + mls.length + 4).replace(/^MLS\s*/i,'').trim() : '';
+      var status = /pending/i.test(body) ? 'Pending' : /reduced|price\s*cut/i.test(body) ? 'Reduced' : 'Active';
+      results.push({
+        url: url, mls: mls, price: price,
+        beds:  bedsM  ? parseInt(bedsM[1])  : 0,
+        baths: bathsM ? parseInt(bathsM[1]) : 0,
+        sqft:  sqftM  ? parseInt(sqftM[1].replace(/,/g,'')) : 0,
+        bldg:  addrM  ? String(addrM[1]) : '200',
+        unit:  unitM  ? unitM[1] : '—',
+        desc:  desc, status: status
+      });
+    }
+  } catch(e) {}
+  return results;
+}
+
+function renderPopupCards(listings) {
+  var pillClass = {'200':'ph1','250':'ph2','300':'ph3'};
+  var pillName  = {'200':'200 · Ph I','250':'250 · Ph II','300':'300 · Ph III'};
+  var statusCls = {'Active':'s-active','New':'s-new','Reduced':'s-reduced','Pending':'s-pending'};
+  if (!listings.length) {
+    return '<div class="popup-fetching"><div style="font-size:32px;margin-bottom:8px;">🏢</div>' +
+      '<div style="font-size:14px;font-weight:600;color:#1a3a5c;">No listings found on MLS page</div>' +
+      '<div style="font-size:12px;margin-top:6px;">The source page may have changed. <a href="'+MLS_URL+'" target="_blank" style="color:#2d6a9f;">View directly ↗</a></div></div>';
+  }
+  return listings.map(function(l) {
+    return '<div class="card">' +
+      '<div class="card-header">' +
+        '<div class="card-price">$'+l.price.toLocaleString()+'</div>' +
+        '<div class="card-status '+(statusCls[l.status]||'s-active')+'">'+l.status+'</div>' +
+      '</div>' +
+      '<div class="card-addr">' +
+        '<span class="bldg-pill '+(pillClass[l.bldg]||'ph1')+'">'+(pillName[l.bldg]||l.bldg)+'</span>' +
+        (l.unit!=='—'?'Unit '+l.unit+' · ':'')+' Merritt Island, FL 32952' +
+      '</div>' +
+      '<div class="card-meta">' +
+        (l.beds  ?'<span>🛏 '+l.beds+' bed'+(l.beds!==1?'s':'')+'</span>':'') +
+        (l.baths ?'<span>🚿 '+l.baths+' bath'+(l.baths!==1?'s':'')+'</span>':'') +
+        (l.sqft  ?'<span>📐 '+l.sqft.toLocaleString()+' sqft</span>':'') +
+        (l.sqft&&l.price?'<span>💰 $'+Math.round(l.price/l.sqft)+'/sqft</span>':'') +
+      '</div>' +
+      (l.desc?'<div class="card-desc">'+l.desc.slice(0,200)+(l.desc.length>200?'…':'')+'</div>':'') +
+      '<div class="card-footer"><span class="mls-num">MLS #'+l.mls+'</span></div>' +
+    '</div>';
+  }).join('');
+}
+
+function fetchLiveListings() {
+  var grid = document.getElementById('popup-grid');
+  grid.innerHTML = '<div class="popup-fetching"><div class="popup-spinner"></div><div style="font-size:13px;">Fetching latest listings…</div></div>';
+  fetch(PROXY + encodeURIComponent(MLS_URL) + '&t=' + Date.now())
+    .then(function(r){ return r.json(); })
+    .then(function(j) {
+      var listings = parseListingsFromHTML(j.contents || '');
+      grid.innerHTML = listings.length
+        ? '<div class="popup-grid" style="display:contents;">'+renderPopupCards(listings)+'</div>'
+        : renderPopupCards([]);
+    })
+    .catch(function() {
+      grid.innerHTML = '<div class="popup-fetching">' +
+        '<div style="font-size:14px;color:#b91c1c;margin-bottom:8px;">Could not fetch live data</div>' +
+        '<div style="font-size:12px;color:#64748b;">Please <a href="'+MLS_URL+'" target="_blank" style="color:#2d6a9f;">view directly on MLS ↗</a></div></div>';
+    });
+}
+
+
 var allListings = [];
 
 function setBldg(b) {
