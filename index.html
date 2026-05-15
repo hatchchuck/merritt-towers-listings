@@ -71,3 +71,165 @@
 <div class="verified-bar">
   <div class="verified-text">🕐 Last updated: <strong id="last-updated">Loading…</strong></div>
 </div>
+
+<div class="stats-strip">
+  <div class="stat"><div class="stat-val" id="s-n">—</div><div class="stat-lbl">Listed</div></div>
+  <div class="stat"><div class="stat-val" id="s-avg">—</div><div class="stat-lbl">Avg price</div></div>
+  <div class="stat"><div class="stat-val" id="s-lo">—</div><div class="stat-lbl">From</div></div>
+  <div class="stat"><div class="stat-val" id="s-hi">—</div><div class="stat-lbl">Up to</div></div>
+</div>
+
+<div class="notice" id="notice"></div>
+
+<div class="quick-links">
+  <a class="quick-link" href="https://www.merrittislandcocoabeachhomes.com/merritt-towers-condo/" target="_blank">📋 Full MLS page</a>
+  <a class="quick-link" href="https://merritt-towers-assistant.netlify.app/" target="_blank">🏢 Resident Assistant</a>
+  <a class="quick-link" href="https://merritt-towers.com/" target="_blank">🌐 Merritt-Towers.com</a>
+</div>
+
+<div class="filters">
+  <select id="f-bldg" onchange="render()">
+    <option value="">All buildings</option>
+    <option value="200">200 — Phase I</option>
+    <option value="250">250 — Phase II</option>
+    <option value="300">300 — Phase III</option>
+  </select>
+  <select id="f-beds" onchange="render()">
+    <option value="">Any beds</option>
+    <option value="1">1 bed</option>
+    <option value="2">2 beds</option>
+    <option value="3">3 beds</option>
+  </select>
+  <select id="f-price" onchange="render()">
+    <option value="">Any price</option>
+    <option value="250">Under $250K</option>
+    <option value="300">Under $300K</option>
+    <option value="400">Under $400K</option>
+    <option value="500">Under $500K</option>
+  </select>
+  <select id="f-sort" onchange="render()">
+    <option value="price-asc">Price ↑</option>
+    <option value="price-desc">Price ↓</option>
+    <option value="largest">Largest first</option>
+  </select>
+</div>
+
+<div class="bldg-tabs">
+  <div class="btab active" id="tab-all" onclick="setBldg('all')">All Buildings</div>
+  <div class="btab" id="tab-200" onclick="setBldg('200')">200 · Phase I</div>
+  <div class="btab" id="tab-250" onclick="setBldg('250')">250 · Phase II</div>
+  <div class="btab" id="tab-300" onclick="setBldg('300')">300 · Phase III</div>
+</div>
+
+<main>
+  <div class="count-row">
+    <span id="count-label">Loading…</span>
+    <span id="updated-label" style="font-size:11px;"></span>
+  </div>
+  <div class="grid" id="grid">
+    <div class="state-box"><div class="spinner"></div><div>Loading listings…</div></div>
+  </div>
+</main>
+
+<footer>
+  <strong>Merritt Towers Condominium Association</strong><br>
+  200-300 S. Sykes Creek Pkwy, Merritt Island, FL 32952<br>
+  Property Management: <a href="tel:3217842091">BP Davis 321-784-2091</a> ·
+  <a href="https://merritt-towers.com/" target="_blank">Merritt-Towers.com</a><br><br>
+  Data source: <a href="https://www.merrittislandcocoabeachhomes.com/merritt-towers-condo/" target="_blank">merrittislandcocoabeachhomes.com</a> (Space Coast MLS) · Updated daily
+</footer>
+
+<script>
+var activeBldg = 'all';
+var allListings = [];
+
+function setBldg(b) {
+  activeBldg = b;
+  ['all','200','250','300'].forEach(function(x){
+    document.getElementById('tab-'+x).className = 'btab'+(x===b?' active':'');
+  });
+  render();
+}
+
+function fmt(v) { return '$'+(v>=1000000?(v/1000000).toFixed(2)+'M':(v/1000).toFixed(0)+'K'); }
+
+function buildCards(list) {
+  var pillClass = {'200':'ph1','250':'ph2','300':'ph3'};
+  var pillName  = {'200':'200 · Ph I','250':'250 · Ph II','300':'300 · Ph III'};
+  var statusCls = {'Active':'s-active','New':'s-new','Reduced':'s-reduced','Pending':'s-pending'};
+  return list.map(function(l) {
+    return '<div class="card">'+
+      '<div class="card-header">'+
+        '<div class="card-price">$'+l.price.toLocaleString()+'</div>'+
+        '<div class="card-status '+(statusCls[l.status]||'s-active')+'">'+l.status+'</div>'+
+      '</div>'+
+      '<div class="card-addr">'+
+        '<span class="bldg-pill '+(pillClass[l.bldg]||'ph1')+'">'+(pillName[l.bldg]||l.bldg)+'</span>'+
+        (l.unit&&l.unit!=='—'?'Unit '+l.unit+' · ':'')+' Merritt Island, FL 32952'+
+      '</div>'+
+      '<div class="card-meta">'+
+        (l.beds ?'<span>🛏 '+l.beds+' bed'+(l.beds!==1?'s':'')+'</span>':'')+
+        (l.baths?'<span>🚿 '+l.baths+' bath'+(l.baths!==1?'s':'')+'</span>':'')+
+        (l.sqft ?'<span>📐 '+l.sqft.toLocaleString()+' sqft</span>':'')+
+        (l.sqft&&l.price?'<span>💰 $'+Math.round(l.price/l.sqft)+'/sqft</span>':'')+
+      '</div>'+
+      (l.desc?'<div class="card-desc">'+l.desc.slice(0,200)+(l.desc.length>200?'…':'')+'</div>':'')+
+      '<div class="card-footer"><span class="mls-num">MLS #'+l.mls+'</span></div>'+
+    '</div>';
+  }).join('');
+}
+
+function render() {
+  var bldg  = document.getElementById('f-bldg').value;
+  var beds  = document.getElementById('f-beds').value;
+  var price = document.getElementById('f-price').value;
+  var sort  = document.getElementById('f-sort').value;
+  var list  = allListings.filter(function(l) {
+    if (activeBldg!=='all' && l.bldg!==activeBldg) return false;
+    if (bldg  && l.bldg!==bldg)                   return false;
+    if (beds  && l.beds!==parseInt(beds))           return false;
+    if (price && l.price>parseInt(price)*1000)      return false;
+    return true;
+  });
+  if (sort==='price-asc')  list.sort(function(a,b){return a.price-b.price;});
+  if (sort==='price-desc') list.sort(function(a,b){return b.price-a.price;});
+  if (sort==='largest')    list.sort(function(a,b){return b.sqft-a.sqft;});
+  var n=list.length;
+  var avg=n?Math.round(list.reduce(function(s,l){return s+l.price;},0)/n):0;
+  var lo=n?Math.min.apply(null,list.map(function(l){return l.price;})):0;
+  var hi=n?Math.max.apply(null,list.map(function(l){return l.price;})):0;
+  document.getElementById('s-n').textContent   = n||'—';
+  document.getElementById('s-avg').textContent = n?fmt(avg):'—';
+  document.getElementById('s-lo').textContent  = n?fmt(lo):'—';
+  document.getElementById('s-hi').textContent  = n?fmt(hi):'—';
+  document.getElementById('count-label').textContent = n?n+' active listing'+(n!==1?'s':'')+' · Ph I, II & III':'No listings match filters';
+  var grid=document.getElementById('grid');
+  if(!n){grid.innerHTML='<div class="state-box"><div style="font-size:36px;margin-bottom:10px;">🏢</div><div style="font-size:14px;font-weight:600;color:#1a3a5c;margin-bottom:4px;">No listings match your filters</div><div style="font-size:13px;">Try adjusting the filters above</div></div>';return;}
+  grid.innerHTML=buildCards(list);
+}
+
+function loadListings() {
+  fetch('listings.json?t='+Date.now())
+    .then(function(r){return r.json();})
+    .then(function(data){
+      allListings=data.listings||[];
+      var updated=new Date(data.updated);
+      var hoursAgo=Math.round((Date.now()-updated.getTime())/36e5);
+      var timeStr=updated.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+' at '+updated.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+      document.getElementById('last-updated').textContent=timeStr;
+      document.getElementById('updated-label').textContent=(hoursAgo<25?'🟢 Live · ':'🟡 Stored · ')+updated.toLocaleTimeString();
+      var notice=document.getElementById('notice');
+      if(hoursAgo>25){notice.textContent='⚠️ Data is '+hoursAgo+' hours old — click Full MLS page above for the latest.';notice.style.display='block';}
+      else{notice.style.display='none';}
+      render();
+    })
+    .catch(function(){
+      document.getElementById('last-updated').textContent='unavailable';
+      document.getElementById('grid').innerHTML='<div class="state-box"><div style="font-size:14px;color:#b91c1c;">Could not load listings. Please try refreshing.</div></div>';
+    });
+}
+
+loadListings();
+</script>
+</body>
+</html>
