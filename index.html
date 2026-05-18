@@ -219,7 +219,7 @@ function loadListings() {
       document.getElementById('last-updated').textContent=timeStr;
       document.getElementById('updated-label').textContent=(hoursAgo<25?'🟢 Live · ':'🟡 Stored · ')+updated.toLocaleTimeString();
       var notice=document.getElementById('notice');
-      if(hoursAgo>25){notice.textContent='⚠️ Data is '+hoursAgo+' hours old — click Full MLS page above for the latest.';notice.style.display='block';}
+      if(hoursAgo>25){notice.textContent='⚠️ Listings were last verified on '+timeStr+'. Click "Full MLS page" above to check for anything newer.';notice.style.display='block';}
       else{notice.style.display='none';}
       render();
     })
