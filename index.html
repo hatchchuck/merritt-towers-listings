@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
+<!-- saved from url=(0051)file:///C:/Users/hatch/Downloads/merritt_index.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Merritt Towers — Active Listings</title>
 <style>
@@ -69,7 +69,7 @@
 </header>
 
 <div class="verified-bar">
-  <div class="verified-text">🕐 Last updated: <strong id="last-updated">Loading…</strong></div>
+  <div class="verified-text">🕐 Last updated: <strong id="last-updated">unavailable</strong></div>
 </div>
 
 <div class="stats-strip">
@@ -115,10 +115,10 @@
 </div>
 
 <div class="bldg-tabs">
-  <div class="btab active" id="tab-all" onclick="setBldg('all')">All Buildings</div>
-  <div class="btab" id="tab-200" onclick="setBldg('200')">200 · Phase I</div>
-  <div class="btab" id="tab-250" onclick="setBldg('250')">250 · Phase II</div>
-  <div class="btab" id="tab-300" onclick="setBldg('300')">300 · Phase III</div>
+  <div class="btab active" id="tab-all" onclick="setBldg(&#39;all&#39;)">All Buildings</div>
+  <div class="btab" id="tab-200" onclick="setBldg(&#39;200&#39;)">200 · Phase I</div>
+  <div class="btab" id="tab-250" onclick="setBldg(&#39;250&#39;)">250 · Phase II</div>
+  <div class="btab" id="tab-300" onclick="setBldg(&#39;300&#39;)">300 · Phase III</div>
 </div>
 
 <main>
@@ -126,9 +126,7 @@
     <span id="count-label">Loading…</span>
     <span id="updated-label" style="font-size:11px;"></span>
   </div>
-  <div class="grid" id="grid">
-    <div class="state-box"><div class="spinner"></div><div>Loading listings…</div></div>
-  </div>
+  <div class="grid" id="grid"><div class="state-box"><div style="font-size:14px;color:#b91c1c;">Could not load listings. Please try refreshing.</div></div></div>
 </main>
 
 <footer>
@@ -219,8 +217,7 @@ function loadListings() {
       document.getElementById('last-updated').textContent=timeStr;
       document.getElementById('updated-label').textContent=(hoursAgo<25?'🟢 Live · ':'🟡 Stored · ')+updated.toLocaleTimeString();
       var notice=document.getElementById('notice');
-      if(hoursAgo>25){notice.textContent='⚠️ Listings were last verified on '+timeStr+'. Click "Full MLS page" above to check for anything newer.';notice.style.display='block';}
-      else{notice.style.display='none';}
+      notice.style.display='none';
       render();
     })
     .catch(function(){
@@ -231,5 +228,6 @@ function loadListings() {
 
 loadListings();
 </script>
-</body>
-</html>
+
+
+</body></html>
