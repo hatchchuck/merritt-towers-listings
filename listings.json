@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-06T09:00:00.000Z",
+  "updated": "2026-07-16T09:00:00.000Z",
 
   "source": "merrittislandcocoabeachhomes.com",
   "listings": [
@@ -35,6 +35,17 @@
       "status": "Active",
       "mls": "1079165",
       "desc": "MOTIVATED SELLER! Welcome to Merritt Towers, a highly sought-after gated waterfront community centrally located on the Space Coast. From the moment you enter, panoramic views of Sykes Creek/Newfound Harbor. Enjoy a front row seat to rocket launches, cruise ships, dolphins & boaters. Watch the sunrise sipping your coffee on your private all-season balcony. Spacious primary bedroom with access to balcony, en suite bathroom featuring double sinks and walk-in closet. Assigned carport. Walk to Merritt Island mall, bank, restaurants, new Health First Hospital being built nearby. New Amphitheatre. 2 waterfront pools. North pool heated year round. Main Clubhouse with full kitchen & activities. Tennis/pickleball/shuffleboard. Dog Park, Walking Pier. EZ drive to SpaceX, Blue Origin, Port, KSC, Beaches, Cocoa Village."
+    },
+    {
+      "bldg": "300",
+      "unit": "302",
+      "price": 430000,
+      "beds": 3,
+      "baths": 2,
+      "sqft": 1909,
+      "status": "Pending",
+      "mls": "1082446",
+      "desc": "Professional Photos & Floorplan Coming Soon. Enjoy Coastal Living without the maintenance. Close to everything: new hospital, shopping, dining, easy access to the Port, Cocoa Beach, NASA & Everything! Updated, 3rd floor waterfront condo with luxurious finishes and sweeping views of Sykes Creek from almost every room. New luxury vinyl plank flooring throughout. White shaker kitchen cabinets, SS appliances, and gorgeous tile backsplash. Enjoy a split-bedroom floor plan with both your primary suite and guest bedroom opening directly to Sykes Creek. Enjoy your morning cup of coffee while watching the sunrise, dolphins play or rocket launches light up the sky. This community has passed all milestone inspections with flying colors! Feel confident knowing the property is in excellent condition and the association is proactive and well-maintained. Community amenities: 2 Large Waterfront Pool, Hot Tub, Tennis Court, Clubhouse, Library, Boardwalk, Dog Park, & Car Wash Station."
     }
       ]
 }
