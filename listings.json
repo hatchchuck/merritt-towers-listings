@@ -3,18 +3,7 @@
 
   "source": "merrittislandcocoabeachhomes.com",
   "listings": [
-    {
-      "bldg": "200",
-      "unit": "410",
-      "price": 380000,
-      "beds": 3,
-      "baths": 2,
-      "sqft": 1764,
-      "status": "Under Contract",
-      "mls": "1055194",
-      "desc": "Upgraded 4th-floor corner unit at Merritt Towers overlooks Sykes Creek and Newfound Harbor. Remodeled kitchen and baths, oak hardwood floors, enclosed balcony. HOA covers cable, internet, water, trash, insurance and grounds."
-    },
-    {
+      {
       "bldg": "300",
       "unit": "201",
       "price": 430000,
